@@ -100,7 +100,7 @@ TThe chance of a shared birthday increases pretty quickly as the group gets bigg
 ## Problem 3
 
 ### Create a simulation function
-First, I created a function to simulates a dataset
+First, I created a function to simulates a dataset.
 ```{r}
 sim_t_test = function(mu, n = 30, sigma = 5) {
   sim_data = tibble(
@@ -118,7 +118,7 @@ sim_t_test(mu = 0)
 sim_t_test(mu = 4)
 ```
 ### Run the simulations
-Generate 5000 datasets from the model
+I generated 5000 datasets for each true mean from 0 to 6
 ```{r}
 sim_results_df = 
   expand_grid(
@@ -130,7 +130,7 @@ sim_results_df =
 ```
 
 ### Calculate power
-test of 𝐻:𝜇=0 using 𝛼=0.05
+I calculated power as the proportion of tests with a p-value below 0.05 for each true mean.
 ```{r}
 power_df = 
   sim_results_df |> 
@@ -147,12 +147,54 @@ power_df |>
   geom_point() + 
   labs(
     title = "Power of a one-sample t-test by true mean",
-    x = "True value of μ",
+    x = "True mean",
     y = "Proportion of times the null was rejected"
   )
 ```
+As the true mean increases, the power also increases. 
+This is because a larger effect size makes it easier to reject the null hypothesis.
+When mu = 0, the rejection rate is around 5%, while for larger values of mu, the power approaches 1.
+
+### Average estimates from all samples
+```{r}
+all_results =
+  sim_results_df |>
+  group_by(mu) |>
+  summarize(mean_estimate = mean(estimate)) |>
+  mutate(group = "All samples")
+all_results
+```
+
+### Average estimates from rejected tests
+```{r}
+rejected_results =
+  sim_results_df |>
+  filter(p.value < 0.05) |>
+  group_by(mu) |>
+  summarize(mean_estimate = mean(estimate)) |>
+  mutate(group = "Null rejected")
+rejected_results
+```
+The average estimates from all samples are generally close to the true values of mu.
+
+### Plot the average estimates
+```{r}
+bind_rows(all_results, rejected_results) |>
+  ggplot(aes(x = mu, y = mean_estimate, color = group)) +
+  geom_line() +
+  geom_point() +
+  labs(
+    title = "Average Estimated Mean by True Mean",
+    x = "True mean",
+    y = "Average estimated mean",
+    color = "Samples"
+  )
+```
+
+The average estimates from rejected tests are not always close to the true values, especially when the true mean is small. 
+That makes sense because samples that happen to show larger effects are more likely to reject the null hypothesis. 
+When the true mean is large, nearly all tests reject the null, so the average estimates are close to the true values.
 
 ```{r}
 
 ```
-
