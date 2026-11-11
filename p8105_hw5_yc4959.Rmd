@@ -17,7 +17,7 @@ Write a function that, for a fixed group size, randomly draws “birthdays” fo
 birthday_check = function(n) {
   birthdays = sample(1:365, size = n, replace = TRUE)
 
-  any(duplicated(birthdays))
+  n_distinct(birthdays) < n
 }
 ```
 
@@ -35,33 +35,124 @@ Next, run this function 10000 times for each group size between 2 and 50.
 ```{r}
 set.seed(1)
 
-birthday_results =
+birthday_results = 
   expand_grid(
     group_size = 2:50,
-    iteration = 1:10000
-  ) |>
-  mutate(
-    shared_birthday = map_lgl(group_size, birthday_check)
-  )
+    iter = 1:10000
+  ) |> 
+  mutate(shared_birthday = map_lgl(group_size, birthday_check))
 ```
 
 
 ### Calculate the probabilities
 compute the probability that at least two people in the group will share a birthday by averaging across the 10000 simulation runs.
 ```{r}
-birthday_summary =
-  birthday_results |>
-  group_by(group_size) |>
-  summarize(
-    probability = mean(shared_birthday),
-    .groups = "drop"
-  )
-
+birthday_summary = 
+  birthday_results |> 
+  group_by(group_size) |> 
+  summarize(probability = mean(shared_birthday))
 birthday_summary
 ```
 
 ### Plot the results
 Make a plot showing the probability as a function of group size, and comment on your results.
 ```{r}
+birthday_summary |> 
+  ggplot(aes(x = group_size, y = probability)) + 
+  geom_line() + 
+  geom_point() + 
+  labs(
+    title = "Probability of sharing a birthday by group size",
+    x = "Group size",
+    y = "Probability of at least one shared birthday"
+  )
+```
+
+TThe chance of a shared birthday increases pretty quickly as the group gets bigger. It first passes 50% at a group size of `r birthday_summary |> filter(probability > 0.5) |> pull(group_size) |> min()`. By the time there are 50 people, the probability reaches `r round(birthday_summary |> filter(group_size == 50) |> pull(probability), 2)`. This is surprising because even a small group can have many possible pairs of people, making a shared birthday more likely.
+
+## Problem 2
+
+```{r}
 
 ```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+
+## Problem 3
+
+### Create a simulation function
+First, I created a function to simulates a dataset
+```{r}
+sim_t_test = function(mu, n = 30, sigma = 5) {
+  sim_data = tibble(
+    x = rnorm(n, mean = mu, sd = sigma)
+  )
+  t.test(pull(sim_data, x), mu = 0) |> 
+    broom::tidy() |> 
+    select(estimate, p.value)
+}
+```
+
+### Test the function
+```{r}
+sim_t_test(mu = 0)
+sim_t_test(mu = 4)
+```
+### Run the simulations
+Generate 5000 datasets from the model
+```{r}
+sim_results_df = 
+  expand_grid(
+    mu = 0:6,
+    iter = 1:5000
+  ) |> 
+  mutate(estimate_df = map(mu, sim_t_test)) |> 
+  unnest(estimate_df)
+```
+
+### Calculate power
+test of 𝐻:𝜇=0 using 𝛼=0.05
+```{r}
+power_df = 
+  sim_results_df |> 
+  group_by(mu) |> 
+  summarize(power = mean(p.value < 0.05))
+power_df 
+```
+
+### Plot power
+```{r}
+power_df |> 
+  ggplot(aes(x = mu, y = power)) + 
+  geom_line() + 
+  geom_point() + 
+  labs(
+    title = "Power of a one-sample t-test by true mean",
+    x = "True value of μ",
+    y = "Proportion of times the null was rejected"
+  )
+```
+
+```{r}
+
+```
+
