@@ -92,28 +92,52 @@ TThe chance of a shared birthday increases pretty quickly as the group gets bigg
 
 ## Problem 2
 
-```{r}
+### Import the data
 
+Start with a dataframe containing all file names.
+Iterate over file names and read in data for each subject using purrr::map and saving the result as a new variable in the dataframe.
+```{r}
+full_df = 
+  tibble(
+    files = list.files("data/"),
+    path = str_c("data/", files)
+  ) |> 
+  mutate(data = map(path, read_csv)) |> 
+  unnest()
 ```
 
-```{r}
 
+### Tidy the data
+Tidy the result; manipulate file names to include control arm and subject ID, make sure weekly observations are “tidy”.
+```{r}
+tidy_df = 
+  full_df |> 
+  mutate(
+    files = str_replace(files, ".csv", ""),
+    group = str_sub(files, 1, 3)) |> 
+  pivot_longer(
+    week_1:week_8,
+    names_to = "week",
+    values_to = "outcome",
+    names_prefix = "week_") |> 
+  mutate(week = as.numeric(week)) |> 
+  select(group, subj = files, week, outcome)
 ```
 
+### Spaghetti plot
+Make a spaghetti plot showing observations on each subject over time.
 ```{r}
-
-```
-
-```{r}
-
-```
-
-```{r}
-
-```
-
-```{r}
-
+tidy_df |> 
+  ggplot(aes(x = week, y = outcome, group = subj, color = group)) + 
+  geom_point() + 
+  geom_path() + 
+  facet_grid(~group) + 
+  labs(
+    title = "Observations over time by subject",
+    x = "Week",
+    y = "Outcome",
+    color = "Arm"
+  )
 ```
 
 
@@ -216,6 +240,3 @@ The average estimates from rejected tests are not always close to the true value
 That makes sense because samples that happen to show larger effects are more likely to reject the null hypothesis. 
 When the true mean is large, nearly all tests reject the null, so the average estimates are close to the true values.
 
-```{r}
-
-```
