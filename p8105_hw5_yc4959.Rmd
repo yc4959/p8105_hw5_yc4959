@@ -88,14 +88,13 @@ birthday_summary |>
   )
 ```
 
-TThe chance of a shared birthday increases pretty quickly as the group gets bigger. It first passes 50% at a group size of `r birthday_summary |> filter(probability > 0.5) |> pull(group_size) |> min()`. By the time there are 50 people, the probability reaches `r round(birthday_summary |> filter(group_size == 50) |> pull(probability), 2)`. This is surprising because even a small group can have many possible pairs of people, making a shared birthday more likely.
+The chance of a shared birthday increases pretty quickly as the group gets bigger. It first passes 50% at a group size of `r birthday_summary |> filter(probability > 0.5) |> pull(group_size) |> min()`. By the time there are 50 people, the probability reaches `r round(birthday_summary |> filter(group_size == 50) |> pull(probability), 2)`. This is surprising because even a small group can have many possible pairs of people, making a shared birthday more likely.
 
 ## Problem 2
 
 ### Import the data
 
-Start with a dataframe containing all file names.
-Iterate over file names and read in data for each subject using purrr::map and saving the result as a new variable in the dataframe.
+I used list.files() to get the file names and map() to read the data for each subject.
 ```{r}
 full_df = 
   tibble(
@@ -106,9 +105,8 @@ full_df =
   unnest()
 ```
 
-
 ### Tidy the data
-Tidy the result; manipulate file names to include control arm and subject ID, make sure weekly observations are “tidy”.
+I tidy the result and manipulate file names to include control arm and subject ID, make sure weekly observations are “tidy”.
 ```{r}
 tidy_df = 
   full_df |> 
@@ -125,7 +123,7 @@ tidy_df =
 ```
 
 ### Spaghetti plot
-Make a spaghetti plot showing observations on each subject over time.
+I make a spaghetti plot showing observations on each subject over time.
 ```{r}
 tidy_df |> 
   ggplot(aes(x = week, y = outcome, group = subj, color = group)) + 
@@ -140,6 +138,8 @@ tidy_df |>
   )
 ```
 
+The control group shows little change over time, while the experimental group generally shows an increasing trend. 
+There are also differences between individual subjects within each group.
 
 ## Problem 3
 
