@@ -4,9 +4,29 @@ author: "Yimeng Cao"
 date: "2026-11-11"
 output: github_document
 ---
-
-```{r setup, include=FALSE}
+Setup
+```{r setup, include = FALSE, message = FALSE}
 library(tidyverse)
+
+knitr::opts_chunk$set(
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%",
+  message = FALSE,
+  warning = FALSE
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+
+set.seed(1)
 ```
 
 # Problem 1
@@ -151,6 +171,7 @@ power_df |>
     y = "Proportion of times the null was rejected"
   )
 ```
+
 As the true mean increases, the power also increases. 
 This is because a larger effect size makes it easier to reject the null hypothesis.
 When mu = 0, the rejection rate is around 5%, while for larger values of mu, the power approaches 1.
